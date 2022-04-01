@@ -10,7 +10,7 @@ namespace DAB_assignment2.Models
     {
         public int Id { get; set; }
         public int PeopleLimit { get; set; }
-        public Location Location { get; set; }
+        public Location? Location { get; set; }
         public string LocationId { get; set; }
         public List<Booking>? Bookings { get; set; }
         public Availability Availability { get; set; }

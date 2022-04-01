@@ -90,7 +90,8 @@ namespace DAB_assignment2.Data
             modelBuilder.Entity<Booking>()
                 .HasOne<Timespan>(b => b.Timespan)
                 .WithMany(t => t.Bookings)
-                .HasForeignKey(b => b.TimespanId);
+                .HasForeignKey(b => b.TimespanId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Chairman>()
                 .HasMany<Society>(c => c.Societies)
@@ -100,7 +101,8 @@ namespace DAB_assignment2.Data
             modelBuilder.Entity<Location>()
                 .HasMany<Room>(l => l.Rooms)
                 .WithOne(r => r.Location)
-                .HasForeignKey(r => r.LocationId);
+                .HasForeignKey(r => r.LocationId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Availability>()
                 .HasMany<Timespan>(a => a.Timespans)
@@ -120,8 +122,6 @@ namespace DAB_assignment2.Data
             modelBuilder.Entity<Member>()
                 .HasMany<Society>(m => m.Societies)
                 .WithMany(s => s.Members);
-
-
         }
     }
 }

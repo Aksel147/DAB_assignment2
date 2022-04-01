@@ -128,8 +128,7 @@ namespace DAB_assignment2.Migrations
                         name: "FK_Rooms_Locations_LocationId",
                         column: x => x.LocationId,
                         principalTable: "Locations",
-                        principalColumn: "Address",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Address");
                 });
 
             migrationBuilder.CreateTable(
@@ -164,7 +163,7 @@ namespace DAB_assignment2.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SocietyId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     LocationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoomId = table.Column<int>(type: "int", nullable: false),
+                    RoomId = table.Column<int>(type: "int", nullable: true),
                     TimespanId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -180,8 +179,7 @@ namespace DAB_assignment2.Migrations
                         name: "FK_Bookings_Rooms_RoomId",
                         column: x => x.RoomId,
                         principalTable: "Rooms",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Bookings_Societies_SocietyId",
                         column: x => x.SocietyId,
@@ -192,8 +190,7 @@ namespace DAB_assignment2.Migrations
                         name: "FK_Bookings_Timespans_TimespanId",
                         column: x => x.TimespanId,
                         principalTable: "Timespans",
-                        principalColumn: "Span",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Span");
                 });
 
             migrationBuilder.CreateIndex(
