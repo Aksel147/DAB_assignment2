@@ -9,20 +9,6 @@ namespace DAB_assignment2.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Availabilities",
-                columns: table => new
-                {
-                    AvailabilityId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LocationId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoomId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Availabilities", x => x.AvailabilityId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Chairmen",
                 columns: table => new
                 {
@@ -33,6 +19,19 @@ namespace DAB_assignment2.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Chairmen", x => x.CPR);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Locations",
+                columns: table => new
+                {
+                    Address = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Properties = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PeopleLimit = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Locations", x => x.Address);
                 });
 
             migrationBuilder.CreateTable(
@@ -48,41 +47,14 @@ namespace DAB_assignment2.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Locations",
-                columns: table => new
-                {
-                    Address = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Properties = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PeopleLimit = table.Column<int>(type: "int", nullable: false),
-                    AvailabilityId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Locations", x => x.Address);
-                    table.ForeignKey(
-                        name: "FK_Locations_Availabilities_AvailabilityId",
-                        column: x => x.AvailabilityId,
-                        principalTable: "Availabilities",
-                        principalColumn: "AvailabilityId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Timespans",
                 columns: table => new
                 {
-                    Span = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    AvailabilityId = table.Column<int>(type: "int", nullable: false)
+                    Span = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Timespans", x => x.Span);
-                    table.ForeignKey(
-                        name: "FK_Timespans_Availabilities_AvailabilityId",
-                        column: x => x.AvailabilityId,
-                        principalTable: "Availabilities",
-                        principalColumn: "AvailabilityId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -112,23 +84,40 @@ namespace DAB_assignment2.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PeopleLimit = table.Column<int>(type: "int", nullable: false),
-                    LocationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    AvailabilityId = table.Column<int>(type: "int", nullable: false)
+                    LocationId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Rooms", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Rooms_Availabilities_AvailabilityId",
-                        column: x => x.AvailabilityId,
-                        principalTable: "Availabilities",
-                        principalColumn: "AvailabilityId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Rooms_Locations_LocationId",
                         column: x => x.LocationId,
                         principalTable: "Locations",
                         principalColumn: "Address");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LocationTimespan",
+                columns: table => new
+                {
+                    AvailabilitySpan = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    LocationsAddress = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LocationTimespan", x => new { x.AvailabilitySpan, x.LocationsAddress });
+                    table.ForeignKey(
+                        name: "FK_LocationTimespan_Locations_LocationsAddress",
+                        column: x => x.LocationsAddress,
+                        principalTable: "Locations",
+                        principalColumn: "Address",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LocationTimespan_Timespans_AvailabilitySpan",
+                        column: x => x.AvailabilitySpan,
+                        principalTable: "Timespans",
+                        principalColumn: "Span",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -193,6 +182,30 @@ namespace DAB_assignment2.Migrations
                         principalColumn: "Span");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "RoomTimespan",
+                columns: table => new
+                {
+                    AvailabilitySpan = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RoomsId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RoomTimespan", x => new { x.AvailabilitySpan, x.RoomsId });
+                    table.ForeignKey(
+                        name: "FK_RoomTimespan_Rooms_RoomsId",
+                        column: x => x.RoomsId,
+                        principalTable: "Rooms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RoomTimespan_Timespans_AvailabilitySpan",
+                        column: x => x.AvailabilitySpan,
+                        principalTable: "Timespans",
+                        principalColumn: "Span",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_LocationId",
                 table: "Bookings",
@@ -214,9 +227,9 @@ namespace DAB_assignment2.Migrations
                 column: "TimespanId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Locations_AvailabilityId",
-                table: "Locations",
-                column: "AvailabilityId");
+                name: "IX_LocationTimespan_LocationsAddress",
+                table: "LocationTimespan",
+                column: "LocationsAddress");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MemberSociety_SocietiesCVR",
@@ -224,24 +237,19 @@ namespace DAB_assignment2.Migrations
                 column: "SocietiesCVR");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Rooms_AvailabilityId",
-                table: "Rooms",
-                column: "AvailabilityId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Rooms_LocationId",
                 table: "Rooms",
                 column: "LocationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RoomTimespan_RoomsId",
+                table: "RoomTimespan",
+                column: "RoomsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Societies_ChairmanId",
                 table: "Societies",
                 column: "ChairmanId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Timespans_AvailabilityId",
-                table: "Timespans",
-                column: "AvailabilityId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -250,13 +258,13 @@ namespace DAB_assignment2.Migrations
                 name: "Bookings");
 
             migrationBuilder.DropTable(
+                name: "LocationTimespan");
+
+            migrationBuilder.DropTable(
                 name: "MemberSociety");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
-
-            migrationBuilder.DropTable(
-                name: "Timespans");
+                name: "RoomTimespan");
 
             migrationBuilder.DropTable(
                 name: "Members");
@@ -265,13 +273,16 @@ namespace DAB_assignment2.Migrations
                 name: "Societies");
 
             migrationBuilder.DropTable(
-                name: "Locations");
+                name: "Rooms");
+
+            migrationBuilder.DropTable(
+                name: "Timespans");
 
             migrationBuilder.DropTable(
                 name: "Chairmen");
 
             migrationBuilder.DropTable(
-                name: "Availabilities");
+                name: "Locations");
         }
     }
 }

@@ -40,7 +40,6 @@ namespace DAB_assignment2.Data
         public DbSet<Member>? Members { get; set; }
         public DbSet<Room>? Rooms { get; set; }
         public DbSet<Society>? Societies { get; set; }
-        public DbSet<Availability>? Availabilities { get; set; }
         public DbSet<Timespan>? Timespans { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -63,9 +62,6 @@ namespace DAB_assignment2.Data
 
             modelBuilder.Entity<Society>()
                 .HasKey(s => s.CVR);
-
-            modelBuilder.Entity<Availability>()
-                .HasKey(a => a.AvailabilityId);
 
             modelBuilder.Entity<Timespan>()
                 .HasKey(t => t.Span);
@@ -104,20 +100,13 @@ namespace DAB_assignment2.Data
                 .HasForeignKey(r => r.LocationId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Availability>()
-                .HasMany<Timespan>(a => a.Timespans)
-                .WithOne(t => t.Availability)
-                .HasForeignKey(t => t.AvailabilityId);
-
-            modelBuilder.Entity<Availability>()
-                .HasMany<Room>(a => a.Rooms)
-                .WithOne(r => r.Availability)
-                .HasForeignKey(r => r.AvailabilityId);
-
-            modelBuilder.Entity<Availability>()
-                .HasMany<Location>(a => a.Locations)
-                .WithOne(l => l.Availability)
-                .HasForeignKey(l => l.AvailabilityId);
+            modelBuilder.Entity<Location>()
+                .HasMany<Timespan>(l => l.Availability)
+                .WithMany(t => t.Locations);
+            
+            modelBuilder.Entity<Room>()
+                .HasMany<Timespan>(r => r.Availability)
+                .WithMany(t => t.Rooms);
 
             modelBuilder.Entity<Member>()
                 .HasMany<Society>(m => m.Societies)

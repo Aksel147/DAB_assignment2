@@ -13,7 +13,6 @@ namespace DAB_assignment2.Models
         public Location? Location { get; set; }
         public string LocationId { get; set; }
         public List<Booking>? Bookings { get; set; }
-        public Availability Availability { get; set; }
-        public int AvailabilityId { get; set; }
+        public List<Timespan> Availability { get; set; }
     }
 }

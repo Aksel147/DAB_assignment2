@@ -22,26 +22,6 @@ namespace DAB_assignment2.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("DAB_assignment2.Models.Availability", b =>
-                {
-                    b.Property<int>("AvailabilityId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AvailabilityId"), 1L, 1);
-
-                    b.Property<string>("LocationId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RoomId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AvailabilityId");
-
-                    b.ToTable("Availabilities");
-                });
-
             modelBuilder.Entity("DAB_assignment2.Models.Booking", b =>
                 {
                     b.Property<int>("Id")
@@ -101,9 +81,6 @@ namespace DAB_assignment2.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("AvailabilityId")
-                        .HasColumnType("int");
-
                     b.Property<int>("PeopleLimit")
                         .HasColumnType("int");
 
@@ -112,8 +89,6 @@ namespace DAB_assignment2.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Address");
-
-                    b.HasIndex("AvailabilityId");
 
                     b.ToTable("Locations");
                 });
@@ -139,9 +114,6 @@ namespace DAB_assignment2.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AvailabilityId")
-                        .HasColumnType("int");
-
                     b.Property<string>("LocationId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -150,8 +122,6 @@ namespace DAB_assignment2.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AvailabilityId");
 
                     b.HasIndex("LocationId");
 
@@ -187,14 +157,24 @@ namespace DAB_assignment2.Migrations
                     b.Property<string>("Span")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("AvailabilityId")
-                        .HasColumnType("int");
-
                     b.HasKey("Span");
 
-                    b.HasIndex("AvailabilityId");
-
                     b.ToTable("Timespans");
+                });
+
+            modelBuilder.Entity("LocationTimespan", b =>
+                {
+                    b.Property<string>("AvailabilitySpan")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LocationsAddress")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("AvailabilitySpan", "LocationsAddress");
+
+                    b.HasIndex("LocationsAddress");
+
+                    b.ToTable("LocationTimespan");
                 });
 
             modelBuilder.Entity("MemberSociety", b =>
@@ -210,6 +190,21 @@ namespace DAB_assignment2.Migrations
                     b.HasIndex("SocietiesCVR");
 
                     b.ToTable("MemberSociety");
+                });
+
+            modelBuilder.Entity("RoomTimespan", b =>
+                {
+                    b.Property<string>("AvailabilitySpan")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("RoomsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AvailabilitySpan", "RoomsId");
+
+                    b.HasIndex("RoomsId");
+
+                    b.ToTable("RoomTimespan");
                 });
 
             modelBuilder.Entity("DAB_assignment2.Models.Booking", b =>
@@ -245,32 +240,13 @@ namespace DAB_assignment2.Migrations
                     b.Navigation("Timespan");
                 });
 
-            modelBuilder.Entity("DAB_assignment2.Models.Location", b =>
-                {
-                    b.HasOne("DAB_assignment2.Models.Availability", "Availability")
-                        .WithMany("Locations")
-                        .HasForeignKey("AvailabilityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Availability");
-                });
-
             modelBuilder.Entity("DAB_assignment2.Models.Room", b =>
                 {
-                    b.HasOne("DAB_assignment2.Models.Availability", "Availability")
-                        .WithMany("Rooms")
-                        .HasForeignKey("AvailabilityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("DAB_assignment2.Models.Location", "Location")
                         .WithMany("Rooms")
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("Availability");
 
                     b.Navigation("Location");
                 });
@@ -286,15 +262,19 @@ namespace DAB_assignment2.Migrations
                     b.Navigation("Chairman");
                 });
 
-            modelBuilder.Entity("DAB_assignment2.Models.Timespan", b =>
+            modelBuilder.Entity("LocationTimespan", b =>
                 {
-                    b.HasOne("DAB_assignment2.Models.Availability", "Availability")
-                        .WithMany("Timespans")
-                        .HasForeignKey("AvailabilityId")
+                    b.HasOne("DAB_assignment2.Models.Timespan", null)
+                        .WithMany()
+                        .HasForeignKey("AvailabilitySpan")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Availability");
+                    b.HasOne("DAB_assignment2.Models.Location", null)
+                        .WithMany()
+                        .HasForeignKey("LocationsAddress")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MemberSociety", b =>
@@ -312,13 +292,19 @@ namespace DAB_assignment2.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DAB_assignment2.Models.Availability", b =>
+            modelBuilder.Entity("RoomTimespan", b =>
                 {
-                    b.Navigation("Locations");
+                    b.HasOne("DAB_assignment2.Models.Timespan", null)
+                        .WithMany()
+                        .HasForeignKey("AvailabilitySpan")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Rooms");
-
-                    b.Navigation("Timespans");
+                    b.HasOne("DAB_assignment2.Models.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DAB_assignment2.Models.Chairman", b =>

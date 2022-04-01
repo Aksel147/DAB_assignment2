@@ -11,9 +11,8 @@ namespace DAB_assignment2.Models
         public string Address { get; set; }
         public string Properties { get; set; }
         public int PeopleLimit { get; set; }
-        public Availability Availability { get; set; }
-        public int AvailabilityId { get; set; }
         public List<Room>? Rooms { get; set; }
         public List<Booking>? Bookings { get; set; }
+        public List<Timespan> Availability { get; set; }
     }
 }
