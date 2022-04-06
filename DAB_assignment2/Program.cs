@@ -1,10 +1,10 @@
 ﻿using DAB_assignment2.Data;
 using DAB_assignment2.Models;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 using (MunicipalityDbContext context = new MunicipalityDbContext())
 {
+    Console.WriteLine("Seeding...");
     Seed(context);
 
     for (;;)
@@ -21,16 +21,16 @@ using (MunicipalityDbContext context = new MunicipalityDbContext())
             case 'r':
                 Console.Clear();
                 // Get all Rooms
-                Console.WriteLine("{0,0}{1,30}\n",
+                Console.WriteLine("{0,40}{1,10}\n",
                     "Location",
                     "Room");
                 List<Location> locations = context.Locations.ToList();
                 locations.ForEach(l =>
                 {
-                    Console.WriteLine(l.Address + ":");
+                    Console.WriteLine("{0,40}", l.Address + ":");
                     context.Rooms.Where(r => r.LocationId == l.Address).ToList().ForEach(r =>
                     {
-                        Console.WriteLine("{0,30}", r.Id);
+                        Console.WriteLine("{0,50}", r.Id);
                     });
                 });
                 break;
@@ -38,10 +38,10 @@ using (MunicipalityDbContext context = new MunicipalityDbContext())
             case 's':
                 Console.Clear();
                 // Get all societies
-                Console.WriteLine("{0,20}{1,30}",
+                Console.WriteLine("{0,20}{1,80}",
                     "Society",
                     "Chairman");
-                Console.WriteLine("{0,10}{1,10}{2,10}{3,10}{4,10}{5,10}\n",
+                Console.WriteLine("{0,20}{1,20}{2,40}{3,20}{4,20}{5,40}\n",
                     "CVR",
                     "Activity",
                     "Address",
@@ -52,7 +52,7 @@ using (MunicipalityDbContext context = new MunicipalityDbContext())
                 societies.ForEach(s =>
                 {
                     Chairman c = context.Chairmen.Where(c => c.CPR == s.ChairmanId).FirstOrDefault();
-                    Console.WriteLine("{0,10}{1,10}{2,10}{3,10}{4,10}{5,10}",
+                    Console.WriteLine("{0,20}{1,20}{2,40}{3,20}{4,20}{5,40}",
                         s.CVR,
                         s.Activity,
                         s.Address,
@@ -65,11 +65,12 @@ using (MunicipalityDbContext context = new MunicipalityDbContext())
             case 'b':
                 Console.Clear();
                 // Get all booked rooms
-                Console.WriteLine("{0,15}{1,35}{2,20}",
+                Console.WriteLine("{0,40}{1,30}{2,20}{3,70}",
                     "Room",
-                    "Society    +    Chairman",
+                    "Society",
+                    "Chairman",
                     "Timespan");
-                Console.WriteLine("{0,10}{1,10}{2,10}{3,10}{4,10}{5,10}{6,10}\n",
+                Console.WriteLine("{0,40}{1,10}{2,20}{3,20}{4,20}{5,40}{6,10}\n",
                     "Location",
                     "ID",
                     "CVR",
@@ -78,20 +79,21 @@ using (MunicipalityDbContext context = new MunicipalityDbContext())
                     "Address",
                     "Span");
                 List<Room> bookedRooms =
-                    context.Rooms.Where(r => r.Bookings.Count > 0).OrderBy(r => r.LocationId).ToList();
+                    context.Rooms.Where(r => r.Id != 2).OrderBy(r => r.LocationId).ToList();
                 bookedRooms.ForEach(r =>
                 {
-                    r.Bookings.ForEach(b =>
+                    context.Bookings.Where(b => b.RoomId == r.Id).ToList().ForEach(b =>
                     {
-                        Chairman c = context.Chairmen.Where(c => c.Societies.Contains(b.Society)).FirstOrDefault();
-                        Console.WriteLine("{0,10}{1,10}{2,10}{3,10}{4,10}{5,10}{6,10}",
+                        Society s = context.Societies.FirstOrDefault(s => s.CVR == b.SocietyId);
+                        Chairman c = context.Chairmen.FirstOrDefault(c => c.CPR == s.ChairmanId);
+                        Console.WriteLine("{0,40}{1,10}{2,20}{3,20}{4,20}{5,40}{6,10}",
                             r.LocationId,
                             r.Id,
                             b.SocietyId,
                             c.CPR,
                             c.Name,
                             c.Address,
-                            b.Timespan.Span);
+                            b.TimespanId);
                     });
                 });
                 break;
@@ -136,31 +138,19 @@ void Seed(MunicipalityDbContext context)
     {
         Address = "Finlandsgade 22, 8200 Aarhus N",
         Properties = "Whiteboard, Coffeemachine",
-        PeopleLimit = 100,
-        Availability = new List<Timespan>()
-        {
-            t1, t2, t3, t4
-        }
+        PeopleLimit = 100
     };
     Location l2 = new Location
     {
         Address = "Gøteborg Allé 7, 8200 Aarhus N",
         Properties = "Basketball, Coffeemachine, Iceskating",
-        PeopleLimit = 15,
-        Availability = new List<Timespan>()
-        {
-            t1, t2, t3, t4
-        }
+        PeopleLimit = 15
     };
     Location l3 = new Location
     {
         Address = "Helsingforsgade 2, 8200 Aarhus N",
         Properties = "Elevator, Table Tennis, Books, TV, Locker",
-        PeopleLimit = 150,
-        Availability = new List<Timespan>()
-        {
-            t1, t2, t3, t4
-        }
+        PeopleLimit = 150
     };
     List<Location> locations = new List<Location>() {l1, l2, l3};
     try
@@ -174,35 +164,148 @@ void Seed(MunicipalityDbContext context)
     //Rooms
     Room r1 = new Room
     {
-        LocationId = l3.Address,
-        PeopleLimit = 25,
-        Availability = new List<Timespan>()
-        {
-            t1, t2, t3, t4
-        }
+        Id = 1,
+        LocationId = l1.Address,
+        PeopleLimit = 25
     };
     Room r2 = new Room
     {
+        Id = 2,
         LocationId = l3.Address,
-        PeopleLimit = 10,
-        Availability = new List<Timespan>()
-        {
-            t1, t2, t3, t4
-        }
+        PeopleLimit = 10
     };
     Room r3 = new Room
     {
-        LocationId = l1.Address,
-        PeopleLimit = 10,
-        Availability = new List<Timespan>()
-        {
-            t1, t2, t3, t4
-        }
+        Id = 3,
+        LocationId = l3.Address,
+        PeopleLimit = 10
     };
     List<Room> rooms = new List<Room>() {r1, r2, r3};
     try
     {
-        context.Rooms.BulkInsert(rooms);
+        context.Rooms.BulkInsert(rooms, options => options.InsertKeepIdentity = true);
+    }
+    catch (SqlException e)
+    {
+    }
+    
+    //LocationTimespans
+    LocationTimespan lt1 = new LocationTimespan()
+    {
+        LocationId = l1.Address,
+        TimespanId = t1.Span
+    };
+    LocationTimespan lt2 = new LocationTimespan()
+    {
+        LocationId = l1.Address,
+        TimespanId = t2.Span
+    };
+    LocationTimespan lt3 = new LocationTimespan()
+    {
+        LocationId = l1.Address,
+        TimespanId = t3.Span
+    };
+    LocationTimespan lt4 = new LocationTimespan()
+    {
+        LocationId = l1.Address,
+        TimespanId = t4.Span
+    };
+    LocationTimespan lt5 = new LocationTimespan()
+    {
+        LocationId = l2.Address,
+        TimespanId = t1.Span
+    };
+    LocationTimespan lt6 = new LocationTimespan()
+    {
+        LocationId = l2.Address,
+        TimespanId = t2.Span
+    };
+    LocationTimespan lt7 = new LocationTimespan()
+    {
+        LocationId = l2.Address,
+        TimespanId = t3.Span
+    };
+    LocationTimespan lt8 = new LocationTimespan()
+    {
+        LocationId = l2.Address,
+        TimespanId = t4.Span
+    };
+    LocationTimespan lt9 = new LocationTimespan()
+    {
+        LocationId = l3.Address,
+        TimespanId = t1.Span
+    };
+    LocationTimespan lt10 = new LocationTimespan()
+    {
+        LocationId = l3.Address,
+        TimespanId = t2.Span
+    };
+    List<LocationTimespan> locationTimespans = new List<LocationTimespan>()
+        {lt1, lt2, lt3, lt4, lt5, lt6, lt7, lt8, lt9, lt10};
+    try
+    {
+        context.LocationTimespans.BulkInsert(locationTimespans);
+    }
+    catch (SqlException e)
+    {
+    }
+    
+    //RoomTimespans
+    RoomTimespan rt1 = new RoomTimespan()
+    {
+        RoomId = r1.Id,
+        TimespanId = t1.Span
+    };
+    RoomTimespan rt2 = new RoomTimespan()
+    {
+        RoomId = r1.Id,
+        TimespanId = t2.Span
+    };
+    RoomTimespan rt3 = new RoomTimespan()
+    {
+        RoomId = r1.Id,
+        TimespanId = t3.Span
+    };
+    RoomTimespan rt4 = new RoomTimespan()
+    {
+        RoomId = r1.Id,
+        TimespanId = t4.Span
+    };
+    RoomTimespan rt5 = new RoomTimespan()
+    {
+        RoomId = r2.Id,
+        TimespanId = t1.Span
+    };
+    RoomTimespan rt6 = new RoomTimespan()
+    {
+        RoomId = r2.Id,
+        TimespanId = t2.Span
+    };
+    RoomTimespan rt7 = new RoomTimespan()
+    {
+        RoomId = r2.Id,
+        TimespanId = t3.Span
+    };
+    RoomTimespan rt8 = new RoomTimespan()
+    {
+        RoomId = r2.Id,
+        TimespanId = t4.Span
+    };
+    RoomTimespan rt9 = new RoomTimespan()
+    {
+        RoomId = r3.Id,
+        TimespanId = t1.Span
+    };
+    RoomTimespan rt10 = new RoomTimespan()
+    {
+        RoomId = r3.Id,
+        TimespanId = t2.Span
+    };
+    List<RoomTimespan> RoomTimespans = new List<RoomTimespan>()
+        {rt1, rt2, rt3, rt4, rt5, rt6, rt7, rt8, rt9, rt10};
+    try
+    {
+        context.RoomTimespans.BulkInsert(RoomTimespans);
     }
     catch (SqlException e)
     {
@@ -237,14 +340,14 @@ void Seed(MunicipalityDbContext context)
     }
     
     //Members
-    Member m1 = new Member();
-    Member m2 = new Member();
-    Member m3 = new Member();
-    Member m4 = new Member();
+    Member m1 = new Member(){Id = 1};
+    Member m2 = new Member(){Id = 2};
+    Member m3 = new Member(){Id = 3};
+    Member m4 = new Member(){Id = 4};
     List<Member> members = new List<Member>() {m1, m2, m3, m4};
     try
     {
-        context.Members.BulkInsert(members);
+        context.Members.BulkInsert(members, options => options.InsertKeepIdentity = true);
     }
     catch (SqlException e)
     {
@@ -256,7 +359,6 @@ void Seed(MunicipalityDbContext context)
         CVR = "289347-9849",
         Activity = "PingPong",
         Address = "Stadion Allé 20, 8000 Aarhus C",
-        Members = members,
         ChairmanId = c1.CPR
     };
     Society s2 = new Society
@@ -264,7 +366,6 @@ void Seed(MunicipalityDbContext context)
         CVR = "3874829-0009",
         Activity = "Baking",
         Address = "Baker Street 50, 8000 Aarhus C",
-        Members = members,
         ChairmanId = c2.CPR
     };
     Society s3 = new Society
@@ -272,7 +373,6 @@ void Seed(MunicipalityDbContext context)
         CVR = "8923470-9877",
         Activity = "Figureskating",
         Address = "Skate Street 110, 8000 Aarhus C",
-        Members = new List<Member> {m1, m2},
         ChairmanId = c3.CPR
     };
     List<Society> societies = new List<Society>() {s1, s2, s3};
@@ -283,69 +383,114 @@ void Seed(MunicipalityDbContext context)
     catch (SqlException e)
     {
     }
+    
+    //MemberSocieties
+    MemberSociety ms1 = new MemberSociety()
+    {
+        MemberId = m1.Id,
+        SocietyId = s1.CVR
+    };
+    MemberSociety ms2 = new MemberSociety()
+    {
+        MemberId = m2.Id,
+        SocietyId = s1.CVR
+    };
+    MemberSociety ms3 = new MemberSociety()
+    {
+        MemberId = m3.Id,
+        SocietyId = s1.CVR
+    };
+    MemberSociety ms4 = new MemberSociety()
+    {
+        MemberId = m4.Id,
+        SocietyId = s1.CVR
+    };
+    MemberSociety ms5 = new MemberSociety()
+    {
+        MemberId = m1.Id,
+        SocietyId = s2.CVR
+    };
+    MemberSociety ms6 = new MemberSociety()
+    {
+        MemberId = m1.Id,
+        SocietyId = s3.CVR
+    };
+    List<MemberSociety> memberSocieties = new List<MemberSociety>() {ms1, ms2, ms3, ms4, ms5, ms6};
+    try
+    {
+        context.MemberSocieties.BulkInsert(memberSocieties);
+    }
+    catch (SqlException e)
+    {
+    }
 
-    // // Bookings
-    // modelBuilder.Entity<Booking>().HasData(new Booking
-    // {
-    //     Id = 1,
-    //     SocietyId = s1.CVR,
-    //     LocationId = l2.Address,
-    //     TimespanId = l2.Availability[0].Span,
-    // });
-    //
-    // modelBuilder.Entity<Booking>().HasData(new Booking
-    // {
-    //     Id = 2,
-    //     SocietyId = s1.CVR,
-    //     LocationId = l2.Address,
-    //     TimespanId = l2.Availability[1].Span,
-    // });
-    // modelBuilder.Entity<Booking>().HasData(new Booking
-    // {
-    //     Id = 3,
-    //     SocietyId = s1.CVR,
-    //     LocationId = l2.Address,
-    //     TimespanId = l2.Availability[2].Span,
-    // });
-    // modelBuilder.Entity<Booking>().HasData(new Booking
-    // {
-    //     Id = 4,
-    //     SocietyId = s1.CVR,
-    //     LocationId = l2.Address,
-    //     TimespanId = l2.Availability[3].Span,
-    // });
-    //
-    // modelBuilder.Entity<Booking>().HasData(new Booking
-    // {
-    //     Id = 5,
-    //     SocietyId = s2.CVR,
-    //     LocationId = r3.LocationId,
-    //     RoomId = r3.Id,
-    //     TimespanId = r3.Availability[0].Span,
-    // });
-    //
-    // modelBuilder.Entity<Booking>().HasData(new Booking
-    // {
-    //     Id = 6,
-    //     SocietyId = s2.CVR,
-    //     LocationId = r3.LocationId,
-    //     RoomId = r3.Id,
-    //     TimespanId = r3.Availability[1].Span,
-    // });
-    // modelBuilder.Entity<Booking>().HasData(new Booking
-    // {
-    //     Id = 7,
-    //     SocietyId = s3.CVR,
-    //     LocationId = r1.LocationId,
-    //     RoomId = r1.Id,
-    //     TimespanId = r1.Availability[1].Span,
-    // });
-    // modelBuilder.Entity<Booking>().HasData(new Booking
-    // {
-    //     Id = 8,
-    //     SocietyId = s3.CVR,
-    //     LocationId = r1.LocationId,
-    //     RoomId = r1.Id,
-    //     TimespanId = r1.Availability[2].Span,
-    // });
+    //Bookings
+    Booking b1 = new Booking
+    {
+        Id = 1,
+        SocietyId = s1.CVR,
+        LocationId = l2.Address,
+        TimespanId = t1.Span
+    };
+    Booking b2 = new Booking
+    {
+        Id = 2,
+        SocietyId = s1.CVR,
+        LocationId = l2.Address,
+        TimespanId = t1.Span
+    };
+    Booking b3 = new Booking
+    {
+        Id = 3,
+        SocietyId = s1.CVR,
+        LocationId = l2.Address,
+        TimespanId = t2.Span
+    };
+    Booking b4 = new Booking
+    {
+        Id = 4,
+        SocietyId = s1.CVR,
+        LocationId = l2.Address,
+        TimespanId = t3.Span
+    };
+    Booking b5 = new Booking
+    {
+        Id = 5,
+        SocietyId = s2.CVR,
+        LocationId = r3.LocationId,
+        RoomId = r3.Id,
+        TimespanId = t1.Span
+    };
+    Booking b6 = new Booking
+    {
+        Id = 6,
+        SocietyId = s2.CVR,
+        LocationId = r3.LocationId,
+        RoomId = r3.Id,
+        TimespanId = t2.Span
+    };
+    Booking b7 = new Booking
+    {
+        Id = 7,
+        SocietyId = s3.CVR,
+        LocationId = r1.LocationId,
+        RoomId = r1.Id,
+        TimespanId = t1.Span
+    };
+    Booking b8 = new Booking
+    {
+        Id = 8,
+        SocietyId = s3.CVR,
+        LocationId = r1.LocationId,
+        RoomId = r1.Id,
+        TimespanId = t4.Span
+    };
+    List<Booking> bookings = new List<Booking>() {b1, b2, b3, b4, b5, b6, b7, b8};
+    try
+    {
+        context.Bookings.BulkInsert(bookings, options => options.InsertKeepIdentity = true);
+    }
+    catch (SqlException e)
+    {
+    }
 }

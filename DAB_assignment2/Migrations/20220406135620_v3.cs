@@ -4,7 +4,7 @@
 
 namespace DAB_assignment2.Migrations
 {
-    public partial class v1 : Migration
+    public partial class v3 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -97,48 +97,48 @@ namespace DAB_assignment2.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "LocationTimespan",
+                name: "LocationTimespans",
                 columns: table => new
                 {
-                    AvailabilitySpan = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LocationsAddress = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    LocationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TimespanId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LocationTimespan", x => new { x.AvailabilitySpan, x.LocationsAddress });
+                    table.PrimaryKey("PK_LocationTimespans", x => new { x.LocationId, x.TimespanId });
                     table.ForeignKey(
-                        name: "FK_LocationTimespan_Locations_LocationsAddress",
-                        column: x => x.LocationsAddress,
+                        name: "FK_LocationTimespans_Locations_LocationId",
+                        column: x => x.LocationId,
                         principalTable: "Locations",
                         principalColumn: "Address",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_LocationTimespan_Timespans_AvailabilitySpan",
-                        column: x => x.AvailabilitySpan,
+                        name: "FK_LocationTimespans_Timespans_TimespanId",
+                        column: x => x.TimespanId,
                         principalTable: "Timespans",
                         principalColumn: "Span",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "MemberSociety",
+                name: "MemberSocieties",
                 columns: table => new
                 {
-                    MembersId = table.Column<int>(type: "int", nullable: false),
-                    SocietiesCVR = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    SocietyId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    MemberId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MemberSociety", x => new { x.MembersId, x.SocietiesCVR });
+                    table.PrimaryKey("PK_MemberSocieties", x => new { x.MemberId, x.SocietyId });
                     table.ForeignKey(
-                        name: "FK_MemberSociety_Members_MembersId",
-                        column: x => x.MembersId,
+                        name: "FK_MemberSocieties_Members_MemberId",
+                        column: x => x.MemberId,
                         principalTable: "Members",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_MemberSociety_Societies_SocietiesCVR",
-                        column: x => x.SocietiesCVR,
+                        name: "FK_MemberSocieties_Societies_SocietyId",
+                        column: x => x.SocietyId,
                         principalTable: "Societies",
                         principalColumn: "CVR",
                         onDelete: ReferentialAction.Cascade);
@@ -183,24 +183,24 @@ namespace DAB_assignment2.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RoomTimespan",
+                name: "RoomTimespans",
                 columns: table => new
                 {
-                    AvailabilitySpan = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoomsId = table.Column<int>(type: "int", nullable: false)
+                    RoomId = table.Column<int>(type: "int", nullable: false),
+                    TimespanId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RoomTimespan", x => new { x.AvailabilitySpan, x.RoomsId });
+                    table.PrimaryKey("PK_RoomTimespans", x => new { x.RoomId, x.TimespanId });
                     table.ForeignKey(
-                        name: "FK_RoomTimespan_Rooms_RoomsId",
-                        column: x => x.RoomsId,
+                        name: "FK_RoomTimespans_Rooms_RoomId",
+                        column: x => x.RoomId,
                         principalTable: "Rooms",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_RoomTimespan_Timespans_AvailabilitySpan",
-                        column: x => x.AvailabilitySpan,
+                        name: "FK_RoomTimespans_Timespans_TimespanId",
+                        column: x => x.TimespanId,
                         principalTable: "Timespans",
                         principalColumn: "Span",
                         onDelete: ReferentialAction.Cascade);
@@ -227,14 +227,14 @@ namespace DAB_assignment2.Migrations
                 column: "TimespanId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LocationTimespan_LocationsAddress",
-                table: "LocationTimespan",
-                column: "LocationsAddress");
+                name: "IX_LocationTimespans_TimespanId",
+                table: "LocationTimespans",
+                column: "TimespanId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MemberSociety_SocietiesCVR",
-                table: "MemberSociety",
-                column: "SocietiesCVR");
+                name: "IX_MemberSocieties_SocietyId",
+                table: "MemberSocieties",
+                column: "SocietyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Rooms_LocationId",
@@ -242,9 +242,9 @@ namespace DAB_assignment2.Migrations
                 column: "LocationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RoomTimespan_RoomsId",
-                table: "RoomTimespan",
-                column: "RoomsId");
+                name: "IX_RoomTimespans_TimespanId",
+                table: "RoomTimespans",
+                column: "TimespanId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Societies_ChairmanId",
@@ -258,13 +258,13 @@ namespace DAB_assignment2.Migrations
                 name: "Bookings");
 
             migrationBuilder.DropTable(
-                name: "LocationTimespan");
+                name: "LocationTimespans");
 
             migrationBuilder.DropTable(
-                name: "MemberSociety");
+                name: "MemberSocieties");
 
             migrationBuilder.DropTable(
-                name: "RoomTimespan");
+                name: "RoomTimespans");
 
             migrationBuilder.DropTable(
                 name: "Members");

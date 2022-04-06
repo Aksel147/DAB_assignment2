@@ -9,8 +9,8 @@ namespace DAB_assignment2.Models
     public class Timespan
     {
         public string Span { get; set; }
-        public List<Location> Locations { get; set; }
-        public List<Room> Rooms { get; set; }
+        public List<LocationTimespan> Locations { get; set; }
+        public List<RoomTimespan> Rooms { get; set; }
         public List<Booking> Bookings { get; set; }
     }
 }

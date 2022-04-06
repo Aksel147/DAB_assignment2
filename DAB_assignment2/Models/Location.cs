@@ -13,6 +13,6 @@ namespace DAB_assignment2.Models
         public int PeopleLimit { get; set; }
         public List<Room>? Rooms { get; set; }
         public List<Booking>? Bookings { get; set; }
-        public List<Timespan> Availability { get; set; }
+        public List<LocationTimespan> Availability { get; set; }
     }
 }

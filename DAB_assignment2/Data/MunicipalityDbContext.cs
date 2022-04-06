@@ -41,6 +41,9 @@ namespace DAB_assignment2.Data
         public DbSet<Room>? Rooms { get; set; }
         public DbSet<Society>? Societies { get; set; }
         public DbSet<Timespan>? Timespans { get; set; }
+        public DbSet<LocationTimespan>? LocationTimespans { get; set; }
+        public DbSet<RoomTimespan>? RoomTimespans { get; set; }
+        public DbSet<MemberSociety>? MemberSocieties { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -65,6 +68,15 @@ namespace DAB_assignment2.Data
 
             modelBuilder.Entity<Timespan>()
                 .HasKey(t => t.Span);
+            
+            modelBuilder.Entity<MemberSociety>()
+                .HasKey(ms => new {ms.MemberId, ms.SocietyId});
+            
+            modelBuilder.Entity<LocationTimespan>()
+                .HasKey(lt => new {lt.LocationId, lt.TimespanId});
+            
+            modelBuilder.Entity<RoomTimespan>()
+                .HasKey(rt => new {rt.RoomId, rt.TimespanId});
             
             // Relations
             modelBuilder.Entity<Booking>()
@@ -99,17 +111,32 @@ namespace DAB_assignment2.Data
                 .HasForeignKey(r => r.LocationId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Location>()
-                .HasMany<Timespan>(l => l.Availability)
-                .WithMany(t => t.Locations);
+            modelBuilder.Entity<MemberSociety>()
+                .HasOne<Member>(ms => ms.Member)
+                .WithMany(m => m.Societies)
+                .HasForeignKey(ms => ms.MemberId);
+            modelBuilder.Entity<MemberSociety>()
+                .HasOne<Society>(ms => ms.Society)
+                .WithMany(s => s.Members)
+                .HasForeignKey(ms => ms.SocietyId);
             
-            modelBuilder.Entity<Room>()
-                .HasMany<Timespan>(r => r.Availability)
-                .WithMany(t => t.Rooms);
-
-            modelBuilder.Entity<Member>()
-                .HasMany<Society>(m => m.Societies)
-                .WithMany(s => s.Members);
+            modelBuilder.Entity<LocationTimespan>()
+                .HasOne<Location>(lt => lt.Location)
+                .WithMany(l => l.Availability)
+                .HasForeignKey(lt => lt.LocationId);
+            modelBuilder.Entity<LocationTimespan>()
+                .HasOne<Timespan>(lt => lt.Timespan)
+                .WithMany(t => t.Locations)
+                .HasForeignKey(lt => lt.TimespanId);
+            
+            modelBuilder.Entity<RoomTimespan>()
+                .HasOne<Room>(rt => rt.Room)
+                .WithMany(r => r.Availability)
+                .HasForeignKey(rt => rt.RoomId);
+            modelBuilder.Entity<RoomTimespan>()
+                .HasOne<Timespan>(rt => rt.Timespan)
+                .WithMany(r => r.Rooms)
+                .HasForeignKey(rt => rt.TimespanId);
         }
     }
 }
