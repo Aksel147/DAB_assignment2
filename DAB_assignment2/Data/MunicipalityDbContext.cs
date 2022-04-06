@@ -65,8 +65,7 @@ namespace DAB_assignment2.Data
 
             modelBuilder.Entity<Timespan>()
                 .HasKey(t => t.Span);
-
-
+            
             // Relations
             modelBuilder.Entity<Booking>()
                 .HasOne<Society>(b => b.Society)
