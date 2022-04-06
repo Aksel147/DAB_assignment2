@@ -92,7 +92,7 @@ using (MunicipalityDbContext context = new MunicipalityDbContext())
                 });
                 break;
         }
-        Console.WriteLine("Press any key to go back..");
+        Console.WriteLine("\nPress any key to go back..");
         char c = Console.ReadKey(true).KeyChar;
     }
 }
