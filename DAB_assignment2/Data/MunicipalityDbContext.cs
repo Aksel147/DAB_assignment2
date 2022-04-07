@@ -44,6 +44,8 @@ namespace DAB_assignment2.Data
         public DbSet<LocationTimespan>? LocationTimespans { get; set; }
         public DbSet<RoomTimespan>? RoomTimespans { get; set; }
         public DbSet<MemberSociety>? MemberSocieties { get; set; }
+        public DbSet<Access>? Accesses { get; set; }
+        public DbSet<KeyResponsible>? KeyResponsibles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -77,6 +79,12 @@ namespace DAB_assignment2.Data
             
             modelBuilder.Entity<RoomTimespan>()
                 .HasKey(rt => new {rt.RoomId, rt.TimespanId});
+            
+            modelBuilder.Entity<Access>()
+                .HasKey(a => a.LocationId);
+            
+            modelBuilder.Entity<KeyResponsible>()
+                .HasKey(kr => kr.SocietyId);
             
             // Relations
             modelBuilder.Entity<Booking>()
@@ -137,6 +145,27 @@ namespace DAB_assignment2.Data
                 .HasOne<Timespan>(rt => rt.Timespan)
                 .WithMany(r => r.Rooms)
                 .HasForeignKey(rt => rt.TimespanId);
+
+            modelBuilder.Entity<Member>()
+                .HasOne<Chairman>(l => l.Chairman)
+                .WithOne(a => a.Member)
+                .HasForeignKey<Chairman>(a => a.MemberId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Location>()
+                .HasOne<Access>(l => l.Access)
+                .WithOne(a => a.Location)
+                .HasForeignKey<Access>(a => a.LocationId);
+            
+            modelBuilder.Entity<Society>()
+                .HasOne<KeyResponsible>(l => l.KeyResponsible)
+                .WithOne(a => a.Society)
+                .HasForeignKey<KeyResponsible>(a => a.SocietyId);
+            
+            modelBuilder.Entity<Member>()
+                .HasOne<KeyResponsible>(l => l.KeyResponsible)
+                .WithOne(a => a.Member)
+                .HasForeignKey<KeyResponsible>(a => a.MemberId);
         }
     }
 }

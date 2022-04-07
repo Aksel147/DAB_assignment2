@@ -14,5 +14,6 @@ namespace DAB_assignment2.Models
         public List<Room>? Rooms { get; set; }
         public List<Booking>? Bookings { get; set; }
         public List<LocationTimespan> Availability { get; set; }
+        public Access? Access { get; set; }
     }
 }

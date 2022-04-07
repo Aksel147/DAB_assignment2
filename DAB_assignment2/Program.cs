@@ -79,7 +79,7 @@ using (MunicipalityDbContext context = new MunicipalityDbContext())
                     "Address",
                     "Span");
                 List<Room> bookedRooms =
-                    context.Rooms.Where(r => r.Id != 2).OrderBy(r => r.LocationId).ToList();
+                    context.Rooms.Where(r => r.Bookings.Count > 0).OrderBy(r => r.LocationId).ToList();
                 bookedRooms.ForEach(r =>
                 {
                     context.Bookings.Where(b => b.RoomId == r.Id).ToList().ForEach(b =>
@@ -437,21 +437,21 @@ void Seed(MunicipalityDbContext context)
         Id = 2,
         SocietyId = s1.CVR,
         LocationId = l2.Address,
-        TimespanId = t1.Span
+        TimespanId = t2.Span
     };
     Booking b3 = new Booking
     {
         Id = 3,
         SocietyId = s1.CVR,
         LocationId = l2.Address,
-        TimespanId = t2.Span
+        TimespanId = t3.Span
     };
     Booking b4 = new Booking
     {
         Id = 4,
         SocietyId = s1.CVR,
         LocationId = l2.Address,
-        TimespanId = t3.Span
+        TimespanId = t4.Span
     };
     Booking b5 = new Booking
     {

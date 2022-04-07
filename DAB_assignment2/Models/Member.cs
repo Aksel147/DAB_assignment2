@@ -10,5 +10,7 @@ namespace DAB_assignment2.Models
     {
         public int Id { get; set; }
         public List<MemberSociety> Societies { get; set; }
+        public KeyResponsible? KeyResponsible { get; set; }
+        public Chairman? Chairman { get; set; }
     }
 }

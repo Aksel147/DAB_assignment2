@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace DAB_assignment2.Models
 {
-    public class Chairman
+    public class KeyResponsible
     {
-        public string CPR { get; set; }
-        public string Name { get; set; }
         public string Address { get; set; }
-        public List<Society> Societies { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Identification { get; set; }
+        public Society Society { get; set; }
+        public string SocietyId { get; set; }
         public Member Member { get; set; }
         public int MemberId { get; set; }
     }

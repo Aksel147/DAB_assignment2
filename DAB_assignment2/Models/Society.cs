@@ -15,5 +15,6 @@ namespace DAB_assignment2.Models
         public List<Booking> Bookings { get; set; }
         public Chairman Chairman { get; set; }
         public string ChairmanId { get; set; }
+        public KeyResponsible? KeyResponsible { get; set; }
     }
 }

@@ -22,6 +22,24 @@ namespace DAB_assignment2.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("DAB_assignment2.Models.Access", b =>
+                {
+                    b.Property<string>("LocationId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Codes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("KeyLocation")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("LocationId");
+
+                    b.ToTable("Accesses");
+                });
+
             modelBuilder.Entity("DAB_assignment2.Models.Booking", b =>
                 {
                     b.Property<int>("Id")
@@ -67,13 +85,47 @@ namespace DAB_assignment2.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("MemberId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("CPR");
 
+                    b.HasIndex("MemberId")
+                        .IsUnique();
+
                     b.ToTable("Chairmen");
+                });
+
+            modelBuilder.Entity("DAB_assignment2.Models.KeyResponsible", b =>
+                {
+                    b.Property<string>("SocietyId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Identification")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MemberId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("SocietyId");
+
+                    b.HasIndex("MemberId")
+                        .IsUnique();
+
+                    b.ToTable("KeyResponsibles");
                 });
 
             modelBuilder.Entity("DAB_assignment2.Models.Location", b =>
@@ -207,6 +259,17 @@ namespace DAB_assignment2.Migrations
                     b.ToTable("Timespans");
                 });
 
+            modelBuilder.Entity("DAB_assignment2.Models.Access", b =>
+                {
+                    b.HasOne("DAB_assignment2.Models.Location", "Location")
+                        .WithOne("Access")
+                        .HasForeignKey("DAB_assignment2.Models.Access", "LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
+                });
+
             modelBuilder.Entity("DAB_assignment2.Models.Booking", b =>
                 {
                     b.HasOne("DAB_assignment2.Models.Location", "Location")
@@ -238,6 +301,36 @@ namespace DAB_assignment2.Migrations
                     b.Navigation("Society");
 
                     b.Navigation("Timespan");
+                });
+
+            modelBuilder.Entity("DAB_assignment2.Models.Chairman", b =>
+                {
+                    b.HasOne("DAB_assignment2.Models.Member", "Member")
+                        .WithOne("Chairman")
+                        .HasForeignKey("DAB_assignment2.Models.Chairman", "MemberId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+                });
+
+            modelBuilder.Entity("DAB_assignment2.Models.KeyResponsible", b =>
+                {
+                    b.HasOne("DAB_assignment2.Models.Member", "Member")
+                        .WithOne("KeyResponsible")
+                        .HasForeignKey("DAB_assignment2.Models.KeyResponsible", "MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DAB_assignment2.Models.Society", "Society")
+                        .WithOne("KeyResponsible")
+                        .HasForeignKey("DAB_assignment2.Models.KeyResponsible", "SocietyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+
+                    b.Navigation("Society");
                 });
 
             modelBuilder.Entity("DAB_assignment2.Models.LocationTimespan", b =>
@@ -326,6 +419,8 @@ namespace DAB_assignment2.Migrations
 
             modelBuilder.Entity("DAB_assignment2.Models.Location", b =>
                 {
+                    b.Navigation("Access");
+
                     b.Navigation("Availability");
 
                     b.Navigation("Bookings");
@@ -335,6 +430,10 @@ namespace DAB_assignment2.Migrations
 
             modelBuilder.Entity("DAB_assignment2.Models.Member", b =>
                 {
+                    b.Navigation("Chairman");
+
+                    b.Navigation("KeyResponsible");
+
                     b.Navigation("Societies");
                 });
 
@@ -348,6 +447,8 @@ namespace DAB_assignment2.Migrations
             modelBuilder.Entity("DAB_assignment2.Models.Society", b =>
                 {
                     b.Navigation("Bookings");
+
+                    b.Navigation("KeyResponsible");
 
                     b.Navigation("Members");
                 });
