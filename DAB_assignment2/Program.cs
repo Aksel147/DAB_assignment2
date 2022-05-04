@@ -1,315 +1,156 @@
-﻿using DAB_assignment2.Data;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using DAB_assignment2.Models;
+using DAB_assignment2.Services;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
-using (MunicipalityDbContext context = new MunicipalityDbContext())
+string Db = "MunicipalityDb";
+string connString = "mongodb://localhost:27017";
+
+MemberService memberService = new MemberService(Db, connString);
+SocietyService societyService = new SocietyService(Db, connString);
+BookingService bookingService = new BookingService(Db, connString);
+LocationService locationService = new LocationService(Db, connString);
+
+Console.WriteLine("Seeding...");
+Seed();
+
+for (;;)
 {
-    Console.WriteLine("Seeding...");
-    Seed(context);
+    Console.Clear();
+    Console.WriteLine("-- Municipality database --\n");
+    Console.WriteLine("Choose option:\n");
+    Console.WriteLine("r: get all rooms");
+    Console.WriteLine("s: get all societies");
+    Console.WriteLine("b: get all booked rooms");
+    Console.WriteLine("k: get all bookings for a key-responsible");
 
-    for (;;)
+    switch (Console.ReadKey(true).KeyChar)
     {
-        Console.Clear();
-        Console.WriteLine("-- Municipality database --\n");
-        Console.WriteLine("Choose option:\n");
-        Console.WriteLine("r: get all rooms");
-        Console.WriteLine("s: get all societies");
-        Console.WriteLine("b: get all booked rooms");
+        case 'r':
+            Console.Clear();
+            // Get all Rooms
+            locationService.Get().ForEach(l =>
+            {
+                Console.WriteLine(l);
+            });
+            break;
 
-        switch (Console.ReadKey(true).KeyChar)
-        {
-            case 'r':
-                Console.Clear();
-                // Get all Rooms
-                Console.WriteLine("{0,40}{1,10}\n",
-                    "Location",
-                    "Room");
-                List<Location> locations = context.Locations.ToList();
-                locations.ForEach(l =>
+        case 's':
+            Console.Clear();
+            // Get all societies
+            societyService.Get().OrderBy(s => s.Activity).ToList().ForEach(s =>
+            {
+                Console.WriteLine(s);
+            });
+            break;
+
+        case 'b':
+            Console.Clear();
+            // Get all booked rooms
+            bookingService.Get().Where(b => b.RoomId != null).ToList().ForEach(b =>
+            {
+                Console.WriteLine(b);
+            });
+            break;
+        
+        case 'k':
+            Console.Clear();
+            // Get all booked rooms
+            Console.WriteLine("Type in your phone number");
+            string number = Console.ReadLine();
+
+            societyService.Get().Where(s => s.KeyResponsible.PhoneNumber == number).ToList().ForEach(s =>
+            {
+                bookingService.Get().Where(b => b.SocietyId == s.CVR).ToList().ForEach(b =>
                 {
-                    Console.WriteLine("{0,40}", l.Address + ":");
-                    context.Rooms.Where(r => r.LocationId == l.Address).ToList().ForEach(r =>
-                    {
-                        Console.WriteLine("{0,50}", r.Id);
-                    });
+                    Console.WriteLine(b);
                 });
-                break;
-
-            case 's':
-                Console.Clear();
-                // Get all societies
-                Console.WriteLine("{0,20}{1,80}",
-                    "Society",
-                    "Chairman");
-                Console.WriteLine("{0,20}{1,20}{2,40}{3,20}{4,20}{5,40}\n",
-                    "CVR",
-                    "Activity",
-                    "Address",
-                    "CPR",
-                    "Name",
-                    "Address");
-                List<Society> societies = context.Societies.OrderBy(s => s.Activity).ToList();
-                societies.ForEach(s =>
-                {
-                    Chairman c = context.Chairmen.Where(c => c.CPR == s.ChairmanId).FirstOrDefault();
-                    Console.WriteLine("{0,20}{1,20}{2,40}{3,20}{4,20}{5,40}",
-                        s.CVR,
-                        s.Activity,
-                        s.Address,
-                        c.CPR,
-                        c.Name,
-                        c.Address);
-                });
-                break;
-
-            case 'b':
-                Console.Clear();
-                // Get all booked rooms
-                Console.WriteLine("{0,40}{1,30}{2,20}{3,70}",
-                    "Room",
-                    "Society",
-                    "Chairman",
-                    "Timespan");
-                Console.WriteLine("{0,40}{1,10}{2,20}{3,20}{4,20}{5,40}{6,10}\n",
-                    "Location",
-                    "ID",
-                    "CVR",
-                    "CPR",
-                    "Name",
-                    "Address",
-                    "Span");
-                List<Room> bookedRooms =
-                    context.Rooms.Where(r => r.Bookings.Count > 0).OrderBy(r => r.LocationId).ToList();
-                bookedRooms.ForEach(r =>
-                {
-                    context.Bookings.Where(b => b.RoomId == r.Id).ToList().ForEach(b =>
-                    {
-                        Society s = context.Societies.FirstOrDefault(s => s.CVR == b.SocietyId);
-                        Chairman c = context.Chairmen.FirstOrDefault(c => c.CPR == s.ChairmanId);
-                        Console.WriteLine("{0,40}{1,10}{2,20}{3,20}{4,20}{5,40}{6,10}",
-                            r.LocationId,
-                            r.Id,
-                            b.SocietyId,
-                            c.CPR,
-                            c.Name,
-                            c.Address,
-                            b.TimespanId);
-                    });
-                });
-                break;
-        }
-
-        Console.WriteLine("\nPress any key to go back..");
-        char c = Console.ReadKey(true).KeyChar;
+            });
+            break;
     }
+
+    Console.WriteLine("\nPress any key to go back..");
+    char c = Console.ReadKey(true).KeyChar;
 }
 
-void Seed(MunicipalityDbContext context)
+void Seed()
 {
+    var client = new MongoClient(connString);
+    var database = client.GetDatabase(Db);
+    database.DropCollection("Bookings");
+    database.DropCollection("Locations");
+    database.DropCollection("Societies");
+    database.DropCollection("Members");
+    
     //Data seeding 
     //Timespans
-    Timespan t1 = new Timespan
-    {
-        Span = "08-10",
-    };
-    Timespan t2 = new Timespan()
-    {
-        Span = "10-12",
-    };
-    Timespan t3 = new Timespan()
-    {
-        Span = "12-14",
-    };
-    Timespan t4 = new Timespan()
-    {
-        Span = "14-16",
-    };
-    List<Timespan> timespans = new List<Timespan>() {t1, t2, t3, t4};
-    try
-    {
-        context.Timespans.BulkInsert(timespans);
-    }
-    catch (SqlException e)
-    {
-    }
+    string t1 = new string("08-10");
+    string t2 = new string("10-12");
+    string t3 = new string("12-14");
+    string t4 = new string("14-16");
+    List<string> a1 = new List<string>() {t1, t2, t3, t4};
 
+    //Rooms
+    Room r1 = new Room
+    {
+        PeopleLimit = 25
+    };
+    Room r2 = new Room
+    {
+        PeopleLimit = 10
+    };
+    Room r3 = new Room
+    {
+        PeopleLimit = 10
+    };
+    
     //Locations
     Location l1 = new Location
     {
         Address = "Finlandsgade 22, 8200 Aarhus N",
         Properties = "Whiteboard, Coffeemachine",
-        PeopleLimit = 100
+        PeopleLimit = 100,
+        Rooms = new List<Room>(){r1, r2},
+        Availability = a1,
+        Access = new Access()
+        {
+            Codes = "1234",
+            KeyLocation = "Under stenen"
+        }
     };
     Location l2 = new Location
     {
         Address = "Gøteborg Allé 7, 8200 Aarhus N",
         Properties = "Basketball, Coffeemachine, Iceskating",
-        PeopleLimit = 15
+        PeopleLimit = 15,
+        Availability = a1,
+        Access = new Access()
+        {
+            Codes = "1234, 8888",
+            KeyLocation = "Over stenen"
+        }
     };
     Location l3 = new Location
     {
         Address = "Helsingforsgade 2, 8200 Aarhus N",
         Properties = "Elevator, Table Tennis, Books, TV, Locker",
-        PeopleLimit = 150
+        PeopleLimit = 150,
+        Rooms = new List<Room>(){r3},
+        Availability = a1,
+        Access = new Access()
+        {
+            Codes = "1212",
+            KeyLocation = "Ved siden af stenen"
+        }
     };
-    List<Location> locations = new List<Location>() {l1, l2, l3};
-    try
-    {
-        context.Locations.BulkInsert(locations);
-    }
-    catch (SqlException e)
-    {
-    }
-
-    //Rooms
-    Room r1 = new Room
-    {
-        Id = 1,
-        LocationId = l1.Address,
-        PeopleLimit = 25
-    };
-    Room r2 = new Room
-    {
-        Id = 2,
-        LocationId = l3.Address,
-        PeopleLimit = 10
-    };
-    Room r3 = new Room
-    {
-        Id = 3,
-        LocationId = l3.Address,
-        PeopleLimit = 10
-    };
-    List<Room> rooms = new List<Room>() {r1, r2, r3};
-    try
-    {
-        context.Rooms.BulkInsert(rooms, options => options.InsertKeepIdentity = true);
-    }
-    catch (SqlException e)
-    {
-    }
-    
-    //LocationTimespans
-    LocationTimespan lt1 = new LocationTimespan()
-    {
-        LocationId = l1.Address,
-        TimespanId = t1.Span
-    };
-    LocationTimespan lt2 = new LocationTimespan()
-    {
-        LocationId = l1.Address,
-        TimespanId = t2.Span
-    };
-    LocationTimespan lt3 = new LocationTimespan()
-    {
-        LocationId = l1.Address,
-        TimespanId = t3.Span
-    };
-    LocationTimespan lt4 = new LocationTimespan()
-    {
-        LocationId = l1.Address,
-        TimespanId = t4.Span
-    };
-    LocationTimespan lt5 = new LocationTimespan()
-    {
-        LocationId = l2.Address,
-        TimespanId = t1.Span
-    };
-    LocationTimespan lt6 = new LocationTimespan()
-    {
-        LocationId = l2.Address,
-        TimespanId = t2.Span
-    };
-    LocationTimespan lt7 = new LocationTimespan()
-    {
-        LocationId = l2.Address,
-        TimespanId = t3.Span
-    };
-    LocationTimespan lt8 = new LocationTimespan()
-    {
-        LocationId = l2.Address,
-        TimespanId = t4.Span
-    };
-    LocationTimespan lt9 = new LocationTimespan()
-    {
-        LocationId = l3.Address,
-        TimespanId = t1.Span
-    };
-    LocationTimespan lt10 = new LocationTimespan()
-    {
-        LocationId = l3.Address,
-        TimespanId = t2.Span
-    };
-    List<LocationTimespan> locationTimespans = new List<LocationTimespan>()
-        {lt1, lt2, lt3, lt4, lt5, lt6, lt7, lt8, lt9, lt10};
-    try
-    {
-        context.LocationTimespans.BulkInsert(locationTimespans);
-    }
-    catch (SqlException e)
-    {
-    }
-    
-    //RoomTimespans
-    RoomTimespan rt1 = new RoomTimespan()
-    {
-        RoomId = r1.Id,
-        TimespanId = t1.Span
-    };
-    RoomTimespan rt2 = new RoomTimespan()
-    {
-        RoomId = r1.Id,
-        TimespanId = t2.Span
-    };
-    RoomTimespan rt3 = new RoomTimespan()
-    {
-        RoomId = r1.Id,
-        TimespanId = t3.Span
-    };
-    RoomTimespan rt4 = new RoomTimespan()
-    {
-        RoomId = r1.Id,
-        TimespanId = t4.Span
-    };
-    RoomTimespan rt5 = new RoomTimespan()
-    {
-        RoomId = r2.Id,
-        TimespanId = t1.Span
-    };
-    RoomTimespan rt6 = new RoomTimespan()
-    {
-        RoomId = r2.Id,
-        TimespanId = t2.Span
-    };
-    RoomTimespan rt7 = new RoomTimespan()
-    {
-        RoomId = r2.Id,
-        TimespanId = t3.Span
-    };
-    RoomTimespan rt8 = new RoomTimespan()
-    {
-        RoomId = r2.Id,
-        TimespanId = t4.Span
-    };
-    RoomTimespan rt9 = new RoomTimespan()
-    {
-        RoomId = r3.Id,
-        TimespanId = t1.Span
-    };
-    RoomTimespan rt10 = new RoomTimespan()
-    {
-        RoomId = r3.Id,
-        TimespanId = t2.Span
-    };
-    List<RoomTimespan> RoomTimespans = new List<RoomTimespan>()
-        {rt1, rt2, rt3, rt4, rt5, rt6, rt7, rt8, rt9, rt10};
-    try
-    {
-        context.RoomTimespans.BulkInsert(RoomTimespans);
-    }
-    catch (SqlException e)
-    {
-    }
+    locationService.Create(l1);
+    locationService.Create(l2);
+    locationService.Create(l3);
 
     //Chairmen
     Chairman c1 = new Chairman
@@ -330,28 +171,12 @@ void Seed(MunicipalityDbContext context)
         Name = "Anton Chairman",
         Address = "Sesame Street 4, 8000 Aarhus C",
     };
-    List<Chairman> chairmen = new List<Chairman>() {c1, c2, c3};
-    try
-    {
-        context.Chairmen.BulkInsert(chairmen);
-    }
-    catch (SqlException e)
-    {
-    }
     
     //Members
     Member m1 = new Member(){Id = 1};
     Member m2 = new Member(){Id = 2};
     Member m3 = new Member(){Id = 3};
     Member m4 = new Member(){Id = 4};
-    List<Member> members = new List<Member>() {m1, m2, m3, m4};
-    try
-    {
-        context.Members.BulkInsert(members, options => options.InsertKeepIdentity = true);
-    }
-    catch (SqlException e)
-    {
-    }
 
     //Societies
     Society s1 = new Society
@@ -375,54 +200,6 @@ void Seed(MunicipalityDbContext context)
         Address = "Skate Street 110, 8000 Aarhus C",
         ChairmanId = c3.CPR
     };
-    List<Society> societies = new List<Society>() {s1, s2, s3};
-    try
-    {
-        context.Societies.BulkInsert(societies);
-    }
-    catch (SqlException e)
-    {
-    }
-    
-    //MemberSocieties
-    MemberSociety ms1 = new MemberSociety()
-    {
-        MemberId = m1.Id,
-        SocietyId = s1.CVR
-    };
-    MemberSociety ms2 = new MemberSociety()
-    {
-        MemberId = m2.Id,
-        SocietyId = s1.CVR
-    };
-    MemberSociety ms3 = new MemberSociety()
-    {
-        MemberId = m3.Id,
-        SocietyId = s1.CVR
-    };
-    MemberSociety ms4 = new MemberSociety()
-    {
-        MemberId = m4.Id,
-        SocietyId = s1.CVR
-    };
-    MemberSociety ms5 = new MemberSociety()
-    {
-        MemberId = m1.Id,
-        SocietyId = s2.CVR
-    };
-    MemberSociety ms6 = new MemberSociety()
-    {
-        MemberId = m1.Id,
-        SocietyId = s3.CVR
-    };
-    List<MemberSociety> memberSocieties = new List<MemberSociety>() {ms1, ms2, ms3, ms4, ms5, ms6};
-    try
-    {
-        context.MemberSocieties.BulkInsert(memberSocieties);
-    }
-    catch (SqlException e)
-    {
-    }
 
     //Bookings
     Booking b1 = new Booking
@@ -485,12 +262,5 @@ void Seed(MunicipalityDbContext context)
         RoomId = r1.Id,
         TimespanId = t4.Span
     };
-    List<Booking> bookings = new List<Booking>() {b1, b2, b3, b4, b5, b6, b7, b8};
-    try
-    {
-        context.Bookings.BulkInsert(bookings, options => options.InsertKeepIdentity = true);
-    }
-    catch (SqlException e)
-    {
-    }
+    
 }

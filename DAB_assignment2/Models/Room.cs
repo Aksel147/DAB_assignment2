@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace DAB_assignment2.Models
 {
@@ -10,9 +6,11 @@ namespace DAB_assignment2.Models
     {
         public int Id { get; set; }
         public int PeopleLimit { get; set; }
-        public Location? Location { get; set; }
-        public string LocationId { get; set; }
-        public List<Booking> Bookings { get; set; }
-        public List<RoomTimespan> Availability { get; set; }
+        public List<string> Availability { get; set; }
+        
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this, (new JsonSerializerOptions() {WriteIndented = true}));
+        }
     }
 }
