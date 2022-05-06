@@ -12,7 +12,7 @@ namespace DAB_assignment2.Models
         public string CPR { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
-        public int MemberId { get; set; }
+        public string MemberId { get; set; }
         
         public override string ToString()
         {

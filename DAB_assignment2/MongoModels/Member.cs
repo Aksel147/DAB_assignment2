@@ -15,6 +15,9 @@ namespace DAB_assignment2.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
+        
+        [BsonElement("SocietyIds")]
+        public List<string> SocietyIds { get; set; }
 
         public override string ToString()
         {

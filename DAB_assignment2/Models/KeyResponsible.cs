@@ -12,7 +12,7 @@ namespace DAB_assignment2.Models
         public string Address { get; set; }
         public string PhoneNumber { get; set; }
         public string Identification { get; set; }
-        public int MemberId { get; set; }
+        public string MemberId { get; set; }
         
         public override string ToString()
         {

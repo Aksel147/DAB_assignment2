@@ -16,14 +16,14 @@ namespace DAB_assignment2.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         
-        [BsonElement("SocietyId")]
-        public string SocietyId { get; set; }
+        [BsonElement("Society")]
+        public Society Society { get; set; }
         
         [BsonElement("Location")]
-        public string Location { get; set; }
+        public Location Location { get; set; }
         
-        [BsonElement("RoomId")]
-        public int RoomId { get; set; }
+        [BsonElement("Room")]
+        public Room Room { get; set; }
         
         [BsonElement("Timespan")]
         public string Timespan { get; set; }

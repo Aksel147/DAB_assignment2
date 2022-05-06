@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.Intrinsics.Arm;
 using System.Text.Json;
 using DAB_assignment2.Models;
 using DAB_assignment2.Services;
@@ -34,30 +35,21 @@ for (;;)
         case 'r':
             Console.Clear();
             // Get all Rooms
-            locationService.Get().ForEach(l =>
-            {
-                Console.WriteLine(l);
-            });
+            locationService.Get().ForEach(l => { Console.WriteLine(l); });
             break;
 
         case 's':
             Console.Clear();
             // Get all societies
-            societyService.Get().OrderBy(s => s.Activity).ToList().ForEach(s =>
-            {
-                Console.WriteLine(s);
-            });
+            societyService.Get().OrderBy(s => s.Activity).ToList().ForEach(s => { Console.WriteLine(s); });
             break;
 
         case 'b':
             Console.Clear();
             // Get all booked rooms
-            bookingService.Get().Where(b => b.RoomId != null).ToList().ForEach(b =>
-            {
-                Console.WriteLine(b);
-            });
+            bookingService.Get().Where(b => b.RoomId != null).ToList().ForEach(b => { Console.WriteLine(b); });
             break;
-        
+
         case 'k':
             Console.Clear();
             // Get all booked rooms
@@ -80,13 +72,14 @@ for (;;)
 
 void Seed()
 {
+    //Drop collections
     var client = new MongoClient(connString);
     var database = client.GetDatabase(Db);
     database.DropCollection("Bookings");
     database.DropCollection("Locations");
     database.DropCollection("Societies");
     database.DropCollection("Members");
-    
+
     //Data seeding 
     //Timespans
     string t1 = new string("08-10");
@@ -108,14 +101,14 @@ void Seed()
     {
         PeopleLimit = 10
     };
-    
+
     //Locations
     Location l1 = new Location
     {
         Address = "Finlandsgade 22, 8200 Aarhus N",
         Properties = "Whiteboard, Coffeemachine",
         PeopleLimit = 100,
-        Rooms = new List<Room>(){r1, r2},
+        Rooms = new List<Room>() {r1, r2},
         Availability = a1,
         Access = new Access()
         {
@@ -140,7 +133,7 @@ void Seed()
         Address = "Helsingforsgade 2, 8200 Aarhus N",
         Properties = "Elevator, Table Tennis, Books, TV, Locker",
         PeopleLimit = 150,
-        Rooms = new List<Room>(){r3},
+        Rooms = new List<Room>() {r3},
         Availability = a1,
         Access = new Access()
         {
@@ -151,116 +144,116 @@ void Seed()
     locationService.Create(l1);
     locationService.Create(l2);
     locationService.Create(l3);
-
-    //Chairmen
-    Chairman c1 = new Chairman
-    {
-        CPR = "123456-7890",
-        Name = "Aksel Chairman",
-        Address = "Stadion Allé 30, 8000 Aarhus C",
-    };
-    Chairman c2 = new Chairman
-    {
-        CPR = "987654-1238",
-        Name = "Sissi Chairman",
-        Address = "Fredriks Allé 8, 8000 Aarhus C",
-    };
-    Chairman c3 = new Chairman
-    {
-        CPR = "888995-3283",
-        Name = "Anton Chairman",
-        Address = "Sesame Street 4, 8000 Aarhus C",
-    };
     
-    //Members
-    Member m1 = new Member(){Id = 1};
-    Member m2 = new Member(){Id = 2};
-    Member m3 = new Member(){Id = 3};
-    Member m4 = new Member(){Id = 4};
-
     //Societies
+    Member m1 = new Member();
+    Member m2 = new Member();
+    memberService.Create(m1);
+    memberService.Create(m2);
+    
     Society s1 = new Society
     {
         CVR = "289347-9849",
         Activity = "PingPong",
         Address = "Stadion Allé 20, 8000 Aarhus C",
-        ChairmanId = c1.CPR
+        Chairman = new Chairman()
+        {
+            CPR = "123456-7890",
+            Name = "Aksel Chairman",
+            Address = "Stadion Allé 30, 8000 Aarhus C",
+            MemberId = m1.Id
+        },
+        KeyResponsible = new KeyResponsible()
+        {
+            Address = "Hovedvejen 10",
+            Identification = "187hj3212",
+            MemberId = m1.Id,
+            PhoneNumber = "30492811"
+        }
     };
     Society s2 = new Society
     {
         CVR = "3874829-0009",
         Activity = "Baking",
         Address = "Baker Street 50, 8000 Aarhus C",
-        ChairmanId = c2.CPR
+        Chairman = new Chairman
+        {
+            CPR = "987654-1238",
+            Name = "Sissi Chairman",
+            Address = "Fredriks Allé 8, 8000 Aarhus C",
+            MemberId = m1.Id
+        },
+        KeyResponsible = new KeyResponsible()
+        {
+            Address = "Hovedvejen 10",
+            Identification = "187hj3212",
+            MemberId = m1.Id,
+            PhoneNumber = "30492811"
+        }
     };
     Society s3 = new Society
     {
         CVR = "8923470-9877",
         Activity = "Figureskating",
         Address = "Skate Street 110, 8000 Aarhus C",
-        ChairmanId = c3.CPR
+        Chairman = new Chairman
+        {
+            CPR = "888995-3283",
+            Name = "Anton Chairman",
+            Address = "Sesame Street 4, 8000 Aarhus C",
+            MemberId = m2.Id
+        },
+        KeyResponsible = new KeyResponsible()
+        {
+            Address = "Hovedvejen 10",
+            Identification = "187hj3212",
+            MemberId = m2.Id,
+            PhoneNumber = "88888888"
+        }
     };
+    societyService.Create(s1);
+    societyService.Create(s2);
+    societyService.Create(s3);
+    
+    //Members
+    Member m3 = new Member(){ SocietyIds = new List<string>(){ s1.Id } };
+    Member m4 = new Member(){ SocietyIds = new List<string>(){ s2.Id } };
+    memberService.Create(m3);
+    memberService.Create(m4);
+    memberService.Update(m1.Id, new Member(){ SocietyIds = new List<string>(){ s1.Id,s2.Id } });
+    memberService.Update(m2.Id, new Member(){ SocietyIds = new List<string>(){ s3.Id } });
 
     //Bookings
     Booking b1 = new Booking
     {
-        Id = 1,
-        SocietyId = s1.CVR,
-        LocationId = l2.Address,
-        TimespanId = t1.Span
+        Society = s1,
+        Location = l1,
+        Room = r1,
+        Timespan = t1
     };
     Booking b2 = new Booking
     {
-        Id = 2,
-        SocietyId = s1.CVR,
-        LocationId = l2.Address,
-        TimespanId = t2.Span
+        Society = s1,
+        Location = l1,
+        Room = r1,
+        Timespan = t1
     };
     Booking b3 = new Booking
     {
-        Id = 3,
-        SocietyId = s1.CVR,
-        LocationId = l2.Address,
-        TimespanId = t3.Span
+        Society = s1,
+        Location = l1,
+        Room = r1,
+        Timespan = t1
     };
     Booking b4 = new Booking
     {
-        Id = 4,
-        SocietyId = s1.CVR,
-        LocationId = l2.Address,
-        TimespanId = t4.Span
+        Society = s1,
+        Location = l1,
+        Room = r1,
+        Timespan = t1
     };
-    Booking b5 = new Booking
-    {
-        Id = 5,
-        SocietyId = s2.CVR,
-        LocationId = r3.LocationId,
-        RoomId = r3.Id,
-        TimespanId = t1.Span
-    };
-    Booking b6 = new Booking
-    {
-        Id = 6,
-        SocietyId = s2.CVR,
-        LocationId = r3.LocationId,
-        RoomId = r3.Id,
-        TimespanId = t2.Span
-    };
-    Booking b7 = new Booking
-    {
-        Id = 7,
-        SocietyId = s3.CVR,
-        LocationId = r1.LocationId,
-        RoomId = r1.Id,
-        TimespanId = t1.Span
-    };
-    Booking b8 = new Booking
-    {
-        Id = 8,
-        SocietyId = s3.CVR,
-        LocationId = r1.LocationId,
-        RoomId = r1.Id,
-        TimespanId = t4.Span
-    };
-    
+    bookingService.Create(b1);
+    bookingService.Create(b2);
+    bookingService.Create(b3);
+    bookingService.Create(b4);
 }
