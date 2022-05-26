@@ -26,7 +26,7 @@ namespace DAB_assignment2.Models
         public int PeopleLimit { get; set; }
         
         [BsonElement("Rooms")]
-        public List<Room> Rooms { get; set; }
+        public List<Room>? Rooms { get; set; }
         
         [BsonElement("Availability")]
         public List<string> Availability { get; set; }

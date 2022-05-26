@@ -15,24 +15,14 @@ public class SocietyService
         _societies = database.GetCollection<Society>(collection);
     }
 
-    public List<Society> Get()
+    public List<Society> GetByActivity()
     {
-        return _societies.Find(Society => true).ToList();
+        return _societies.Find(Society => true).ToList().OrderBy(s => s.Activity).ToList();
     }
 
-    public Society Get(string cvr)
+    public List<Society> GetByKeyResponsible(string phoneNumber)
     {
-        return _societies.Find(s => s.CVR == cvr).FirstOrDefault();
-    }
-
-    public Chairman GetChairman(string cvr)
-    {
-        return _societies.Find(s => s.CVR == cvr).FirstOrDefault().Chairman;
-    }
-    
-    public KeyResponsible GetKeyResponsible(string cvr)
-    {
-        return _societies.Find(s => s.CVR == cvr).FirstOrDefault().KeyResponsible;
+        return _societies.Find(s => s.KeyResponsible.PhoneNumber == phoneNumber).ToList();
     }
 
     public Society Create(Society Society)

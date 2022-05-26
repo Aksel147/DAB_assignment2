@@ -35,21 +35,18 @@ for (;;)
         case 'r':
             Console.Clear();
             // Get all Rooms
-            locationService.Get().Where(l => l.Rooms != null).ToList().ForEach(l =>
+            locationService.GetRooms().ForEach(l =>
             {
                 Console.WriteLine("");
                 Console.WriteLine(l.Address + ":");
-                l.Rooms.ForEach(r =>
-                {
-                    Console.WriteLine("    Room: " + r.Id);
-                });
+                l.Rooms.ForEach(r => { Console.WriteLine("    Room: " + r.Id); });
             });
             break;
 
         case 's':
             Console.Clear();
             // Get all societies
-            societyService.Get().OrderBy(s => s.Activity).ToList().ForEach(s =>
+            societyService.GetByActivity().ForEach(s =>
             {
                 Console.WriteLine("");
                 Console.WriteLine("Activity: " + s.Activity);
@@ -62,11 +59,11 @@ for (;;)
         case 'b':
             Console.Clear();
             // Get all booked rooms
-            bookingService.Get().Where(b => b.Room != null).ToList().ForEach(b =>
+            bookingService.GetRooms().ForEach(b =>
             {
                 Console.WriteLine("");
                 Console.WriteLine("Address: " + b.Location.Address);
-                Console.WriteLine("Room: " + b.Room.Id);
+                Console.WriteLine("Room: " + b.Room?.Id);
                 Console.WriteLine("Society-CVR: " + b.Society.CVR);
                 Console.WriteLine("Society-Chairman: " + b.Society.Chairman);
                 Console.WriteLine("Timespan: " + b.Timespan);
@@ -77,21 +74,19 @@ for (;;)
             Console.Clear();
             // Get all bookings from key-responsible
             Console.WriteLine("Type in your phone number");
-            string number = Console.ReadLine();
+            string number = Console.ReadLine()??"";
 
-            societyService.Get().Where(s => s.KeyResponsible.PhoneNumber == number).ToList().ForEach(s =>
+            bookingService.GetByKeyResponsible(number).ForEach(b =>
             {
-                bookingService.Get().Where(b => b.Society.CVR == s.CVR).ToList().ForEach(b =>
+                Console.WriteLine("");
+                Console.WriteLine("Address: " + b.Location.Address);
+                if (b.Room != null)
                 {
-                    Console.WriteLine("");
-                    Console.WriteLine("Address: " + b.Location.Address);
-                    if (b.Room != null)
-                    {
-                        Console.WriteLine("Room: " + b.Room.Id);    
-                    }
-                    Console.WriteLine("Access: " + b.Location.Access);
-                    Console.WriteLine("Timespan: " + b.Timespan);
-                });
+                    Console.WriteLine("Room: " + b.Room.Id);
+                }
+
+                Console.WriteLine("Access: " + b.Location.Access);
+                Console.WriteLine("Timespan: " + b.Timespan);
             });
             break;
     }
@@ -177,13 +172,13 @@ void Seed()
     locationService.Create(l1);
     locationService.Create(l2);
     locationService.Create(l3);
-    
+
     //Societies
     Member m1 = new Member();
     Member m2 = new Member();
     memberService.Create(m1);
     memberService.Create(m2);
-    
+
     Society s1 = new Society
     {
         CVR = "289347-9849",
@@ -247,14 +242,14 @@ void Seed()
     societyService.Create(s1);
     societyService.Create(s2);
     societyService.Create(s3);
-    
+
     //Members
-    Member m3 = new Member(){ SocietyIds = new List<string>(){ s1.Id } };
-    Member m4 = new Member(){ SocietyIds = new List<string>(){ s2.Id } };
+    Member m3 = new Member() {SocietyIds = new List<string>() {s1.Id}};
+    Member m4 = new Member() {SocietyIds = new List<string>() {s2.Id}};
     memberService.Create(m3);
     memberService.Create(m4);
-    memberService.Update(m1.Id, new Member(){ Id = m1.Id, SocietyIds = new List<string>(){ s1.Id,s2.Id } });
-    memberService.Update(m2.Id, new Member(){ Id = m2.Id, SocietyIds = new List<string>(){ s3.Id } });
+    memberService.Update(m1.Id, new Member() {Id = m1.Id, SocietyIds = new List<string>() {s1.Id, s2.Id}});
+    memberService.Update(m2.Id, new Member() {Id = m2.Id, SocietyIds = new List<string>() {s3.Id}});
 
     //Bookings
     Booking b1 = new Booking

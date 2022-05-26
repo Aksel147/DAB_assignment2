@@ -23,7 +23,7 @@ namespace DAB_assignment2.Models
         public Location Location { get; set; }
         
         [BsonElement("Room")]
-        public Room Room { get; set; }
+        public Room? Room { get; set; }
         
         [BsonElement("Timespan")]
         public string Timespan { get; set; }

@@ -15,14 +15,14 @@ public class BookingService
         _bookings = database.GetCollection<Booking>(collection);
     }
 
-    public List<Booking> Get()
+    public List<Booking> GetRooms()
     {
-        return _bookings.Find(Booking => true).ToList();
+        return _bookings.Find(b => b.Room != null).ToList();
     }
 
-    public Booking Get(string id)
+    public List<Booking> GetByKeyResponsible(string phoneNumber)
     {
-        return _bookings.Find(Booking => Booking.Id == id).FirstOrDefault();
+        return _bookings.Find(Booking => Booking.Society.KeyResponsible.PhoneNumber == phoneNumber).ToList();
     }
 
     public Booking Create(Booking Booking)

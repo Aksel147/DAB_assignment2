@@ -15,14 +15,9 @@ public class LocationService
         _locations = database.GetCollection<Location>(collection);
     }
 
-    public List<Location> Get()
+    public List<Location> GetRooms()
     {
-        return _locations.Find(Location => true).ToList();
-    }
-
-    public Location Get(string id)
-    {
-        return _locations.Find(Location => Location.Id == id).FirstOrDefault();
+        return _locations.Find(Location => Location.Rooms != null).ToList();
     }
 
     public Location Create(Location Location)
